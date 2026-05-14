@@ -1,0 +1,269 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
+}
+
+model User {
+  id                    String                 @id @default(cuid())
+  email                 String                 @unique
+  passwordHash          String
+  firstName             String?
+  lastName              String?
+  profilePictureUrl     String?
+  subscriptionPlan      SubscriptionPlan       @default(FREE)
+  subscriptionEndsAt    DateTime?
+  createdAt             DateTime               @default(now())
+  updatedAt             DateTime               @updatedAt
+
+  videos                Video[]
+  platformCredentials   PlatformCredential[]
+  captionJobs           CaptionJob[]
+  renderJobs            RenderJob[]
+  publishJobs           PublishJob[]
+
+  @@map("users")
+}
+
+enum SubscriptionPlan {
+  FREE
+  PRO
+  ENTERPRISE
+}
+
+model Video {
+  id                    String                 @id @default(cuid())
+  userId                String
+  user                  User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  title                 String
+  description           String?
+  sourceUrl             String
+  sourceType            SourceType
+  downloadedFilePath    String?
+  dimensions            Json?
+  status                VideoStatus            @default(PENDING)
+  defaultLanguage       Language               @default(ENGLISH)
+  
+  createdAt             DateTime               @default(now())
+  updatedAt             DateTime               @updatedAt
+
+  captions              Caption[]
+  renderedVideos        RenderedVideo[]
+  publishingHistory     PublishingHistory[]
+  captionJobs           CaptionJob[]
+  renderJobs            RenderJob[]
+  publishJobs           PublishJob[]
+
+  @@index([userId])
+  @@index([status])
+  @@map("videos")
+}
+
+enum SourceType {
+  YOUTUBE
+  INSTAGRAM
+  TIKTOK
+  UPLOAD
+  URL
+}
+
+enum VideoStatus {
+  PENDING
+  DOWNLOADING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+enum Language {
+  ENGLISH
+  SPANISH
+  FRENCH
+  GERMAN
+  CHINESE
+  ARABIC
+  HINDI
+  PORTUGUESE
+  RUSSIAN
+  JAPANESE
+  URDU
+  PUNJABI
+}
+
+model Caption {
+  id                    String                 @id @default(cuid())
+  videoId               String
+  video                 Video                  @relation(fields: [videoId], references: [id], onDelete: Cascade)
+  
+  language              Language
+  srtContent            String
+  vttContent            String
+  accuracy              Float?
+  isAuto                Boolean                @default(true)
+  
+  createdAt             DateTime               @default(now())
+  updatedAt             DateTime               @updatedAt
+
+  renderedVideos        RenderedVideo[]
+
+  @@unique([videoId, language])
+  @@map("captions")
+}
+
+model RenderedVideo {
+  id                    String                 @id @default(cuid())
+  videoId               String
+  video                 Video                  @relation(fields: [videoId], references: [id], onDelete: Cascade)
+  
+  captionId             String
+  caption               Caption                @relation(fields: [captionId], references: [id], onDelete: Cascade)
+  
+  platform              Platform
+  filePath              String
+  fileSize              BigInt
+  duration              Int
+  resolution            String
+  quality               String
+  format                String
+  codec                 String
+  
+  createdAt             DateTime               @default(now())
+  updatedAt             DateTime               @updatedAt
+
+  publishingHistory     PublishingHistory[]
+
+  @@unique([videoId, captionId, platform])
+  @@map("rendered_videos")
+}
+
+enum Platform {
+  YOUTUBE
+  INSTAGRAM
+  TIKTOK
+}
+
+model PublishingHistory {
+  id                    String                 @id @default(cuid())
+  videoId               String
+  video                 Video                  @relation(fields: [videoId], references: [id], onDelete: Cascade)
+  
+  renderedVideoId       String
+  renderedVideo         RenderedVideo          @relation(fields: [renderedVideoId], references: [id], onDelete: Cascade)
+  
+  platform              Platform
+  platformVideoId       String
+  platformUrl           String
+  publishedAt           DateTime               @default(now())
+  viewCount             Int                    @default(0)
+  engagementRate        Float?
+  
+  createdAt             DateTime               @default(now())
+  updatedAt             DateTime               @updatedAt
+
+  @@unique([videoId, platform])
+  @@map("publishing_history")
+}
+
+model PlatformCredential {
+  id                    String                 @id @default(cuid())
+  userId                String
+  user                  User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  platform              Platform               @unique
+  accessToken           String
+  refreshToken          String?
+  expiresAt             DateTime?
+  scopes                Json
+  isActive              Boolean                @default(true)
+  lastUsedAt            DateTime?
+  
+  createdAt             DateTime               @default(now())
+  updatedAt             DateTime               @updatedAt
+
+  @@unique([userId, platform])
+  @@map("platform_credentials")
+}
+
+model CaptionJob {
+  id                    String                 @id @default(cuid())
+  userId                String
+  user                  User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  videoId               String
+  video                 Video                  @relation(fields: [videoId], references: [id], onDelete: Cascade)
+  
+  status                JobStatus              @default(PENDING)
+  progress              Int                    @default(0)
+  errorMessage          String?
+  retryCount            Int                    @default(0)
+  maxRetries            Int                    @default(3)
+  nextRetryAt           DateTime?
+  
+  createdAt             DateTime               @default(now())
+  updatedAt             DateTime               @updatedAt
+
+  @@index([userId])
+  @@index([videoId])
+  @@index([status])
+  @@map("caption_jobs")
+}
+
+model RenderJob {
+  id                    String                 @id @default(cuid())
+  userId                String
+  user                  User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  videoId               String
+  video                 Video                  @relation(fields: [videoId], references: [id], onDelete: Cascade)
+  
+  status                JobStatus              @default(PENDING)
+  progress              Int                    @default(0)
+  errorMessage          String?
+  retryCount            Int                    @default(0)
+  maxRetries            Int                    @default(3)
+  nextRetryAt           DateTime?
+  
+  createdAt             DateTime               @default(now())
+  updatedAt             DateTime               @updatedAt
+
+  @@index([userId])
+  @@index([videoId])
+  @@index([status])
+  @@map("render_jobs")
+}
+
+model PublishJob {
+  id                    String                 @id @default(cuid())
+  userId                String
+  user                  User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  videoId               String
+  video                 Video                  @relation(fields: [videoId], references: [id], onDelete: Cascade)
+  
+  status                JobStatus              @default(PENDING)
+  progress              Int                    @default(0)
+  errorMessage          String?
+  retryCount            Int                    @default(0)
+  maxRetries            Int                    @default(3)
+  nextRetryAt           DateTime?
+  
+  createdAt             DateTime               @default(now())
+  updatedAt             DateTime               @updatedAt
+
+  @@index([userId])
+  @@index([videoId])
+  @@index([status])
+  @@map("publish_jobs")
+}
+
+enum JobStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}

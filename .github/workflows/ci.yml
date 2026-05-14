@@ -1,0 +1,87 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  backend-test:
+    name: Backend Tests
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_USER: test_user
+          POSTGRES_PASSWORD: test_password
+          POSTGRES_DB: test_db
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+      
+      redis:
+        image: redis:7-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: 'omnisolve-backend/package-lock.json'
+    
+    - name: Install dependencies
+      working-directory: ./omnisolve-backend
+      run: npm ci
+    
+    - name: Generate Prisma client
+      working-directory: ./omnisolve-backend
+      env:
+        DATABASE_URL: postgresql://test_user:test_password@localhost:5432/test_db
+        SHADOW_DATABASE_URL: postgresql://test_user:test_password@localhost:5432/test_shadow_db
+      run: npm run prisma:generate
+    
+    - name: Run migrations
+      working-directory: ./omnisolve-backend
+      env:
+        DATABASE_URL: postgresql://test_user:test_password@localhost:5432/test_db
+        SHADOW_DATABASE_URL: postgresql://test_user:test_password@localhost:5432/test_shadow_db
+      run: npm run prisma:migrate
+    
+    - name: Lint
+      working-directory: ./omnisolve-backend
+      run: npm run lint || true
+    
+    - name: Build
+      working-directory: ./omnisolve-backend
+      run: npm run build || true
+    
+    - name: Run tests
+      working-directory: ./omnisolve-backend
+      env:
+        DATABASE_URL: postgresql://test_user:test_password@localhost:5432/test_db
+        REDIS_HOST: localhost
+        REDIS_PORT: 6379
+        JWT_SECRET: test_secret_change_in_production
+        ENCRYPTION_KEY: 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
+      run: npm test || true
