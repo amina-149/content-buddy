@@ -11,6 +11,17 @@ export default defineConfig({
     }
   },
   server: {
-    port: 3000
-  }
+    port: 3000,
+    proxy: {
+      '/pipeline': {
+        target: 'http://localhost:3002',
+        changeOrigin: true,
+        rewrite: (p) => p.replace(/^\/pipeline/, '/api/pipeline'),
+      },
+      '/api': {
+        target: 'http://localhost:3001',
+        changeOrigin: true,
+      },
+    },
+  },
 })

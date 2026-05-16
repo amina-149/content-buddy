@@ -140,7 +140,7 @@ async function publishToYouTube(renderedVideo: any, accessToken: string, job: an
       snippet: {
         title: renderedVideo.video.title,
         description: renderedVideo.video.description || '',
-        tags: ['OmniSolve'],
+        tags: ['Content Buddy'],
         categoryId: '22'
       },
       status: {

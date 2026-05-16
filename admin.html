@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Admin Dashboard - EXTRACT</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3a5f 0%, #0f1419 100%);
+            color: #e0e6ff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .login-section {
+            max-width: 400px;
+            margin: 6rem auto;
+            background: #1a1f3a;
+            border: 1px solid #2a3f5f;
+            border-radius: 8px;
+            padding: 30px;
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .login-header h1 {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #00d4ff, #00a8ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .login-header p {
+            font-size: 13px;
+            color: #8892b0;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: #e0e6ff;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 16px;
+            background: #0f1424;
+            border: 1px solid #00d4ff;
+            color: #e0e6ff;
+            border-radius: 4px;
+            font-family: inherit;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            box-shadow: 0 0 12px rgba(0, 212, 255, 0.3);
+            border-color: #00a8ff;
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 12px;
+            background: rgba(0, 212, 255, 0.1);
+            border: 1px solid #00d4ff;
+            color: #00d4ff;
+            border-radius: 4px;
+            font-size: 13px;
+            font-weight: 600;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 10px;
+        }
+
+        .login-btn:hover {
+            background: rgba(0, 212, 255, 0.2);
+            box-shadow: 0 0 12px rgba(0, 212, 255, 0.2);
+        }
+
+        .login-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .error-message {
+            padding: 12px;
+            background: rgba(255, 100, 100, 0.1);
+            border: 1px solid #ff6464;
+            color: #ff6464;
+            border-radius: 4px;
+            font-size: 12px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        .dashboard {
+            display: none;
+        }
+
+        .dashboard.show {
+            display: block;
+        }
+
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #2a3f5f;
+        }
+
+        .dashboard-header h1 {
+            font-size: 32px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #00d4ff, #00a8ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .logout-btn {
+            padding: 10px 16px;
+            background: transparent;
+            border: 1px solid #8892b0;
+            color: #8892b0;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .logout-btn:hover {
+            border-color: #00d4ff;
+            color: #00d4ff;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: #1a1f3a;
+            border: 1px solid #2a3f5f;
+            border-radius: 8px;
+            padding: 20px;
+            transition: all 0.3s;
+        }
+
+        .stat-card:hover {
+            border-color: #00d4ff;
+            box-shadow: 0 0 20px rgba(0, 212, 255, 0.1);
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #8892b0;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: #00d4ff;
+            margin-bottom: 8px;
+        }
+
+        .stat-change {
+            font-size: 12px;
+            color: #8892b0;
+        }
+
+        .stat-change.positive {
+            color: #00c864;
+        }
+
+        .stat-change.negative {
+            color: #ff6464;
+        }
+
+        .section {
+            background: #1a1f3a;
+            border: 1px solid #2a3f5f;
+            border-radius: 8px;
+            padding: 25px;
+            margin-bottom: 25px;
+        }
+
+        .section h2 {
+            font-size: 20px;
+            font-weight: 600;
+            color: #00d4ff;
+            margin-bottom: 20px;
+        }
+
+        .chart-container {
+            margin-top: 15px;
+        }
+
+        .chart-item {
+            margin-bottom: 15px;
+        }
+
+        .chart-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 6px;
+            font-size: 12px;
+        }
+
+        .chart-bar {
+            height: 6px;
+            background: #0f1424;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .chart-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00d4ff, #00a8ff);
+            transition: width 0.3s;
+        }
+
+        .error-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .error-item {
+            padding: 12px;
+            background: #0f1424;
+            border: 1px solid #2a3f5f;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            font-size: 12px;
+        }
+
+        .error-item-type {
+            color: #ff9500;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .error-item-message {
+            color: #8892b0;
+            margin-bottom: 4px;
+        }
+
+        .error-item-time {
+            color: #5a6375;
+            font-size: 11px;
+        }
+
+        .tab-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #2a3f5f;
+            padding-bottom: 15px;
+        }
+
+        .tab-btn {
+            padding: 8px 16px;
+            background: transparent;
+            border: 1px solid transparent;
+            color: #8892b0;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .tab-btn.active {
+            border: 1px solid #00d4ff;
+            color: #00d4ff;
+            background: rgba(0, 212, 255, 0.05);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #8892b0;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            border: 3px solid rgba(0, 212, 255, 0.2);
+            border-top-color: #00d4ff;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .alert {
+            padding: 12px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            font-size: 13px;
+        }
+
+        .alert.warning {
+            background: rgba(255, 200, 0, 0.1);
+            border: 1px solid #ffc800;
+            color: #ffc800;
+        }
+
+        .alert.success {
+            background: rgba(0, 200, 100, 0.1);
+            border: 1px solid #00c864;
+            color: #00c864;
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .tab-buttons {
+                flex-wrap: wrap;
+            }
+
+            .tab-btn {
+                font-size: 11px;
+                padding: 6px 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Login Section -->
+        <div id="loginSection" class="login-section">
+            <div class="login-header">
+                <h1>EXTRACT</h1>
+                <p>Admin Dashboard</p>
+            </div>
+
+            <div id="errorMessage" class="error-message"></div>
+
+            <form id="loginForm" onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label for="password">Admin Password</label>
+                    <input 
+                        type="password" 
+                        id="password" 
+                        placeholder="Enter admin password" 
+                        required
+                        autocomplete="off"
+                    />
+                </div>
+
+                <button type="submit" class="login-btn" id="loginBtn">Sign in</button>
+            </form>
+
+            <div style="margin-top: 20px; padding: 15px; background: #0f1424; border-radius: 4px; border: 1px solid #2a3f5f; font-size: 11px; color: #8892b0;">
+                <strong>🔐 Security Note:</strong> Change default credentials in production. Use HTTPS, JWT tokens, and enable 2FA.
+            </div>
+        </div>
+
+        <!-- Dashboard Section -->
+        <div id="dashboard" class="dashboard">
+            <div class="dashboard-header">
+                <h1>Admin Dashboard</h1>
+                <button class="logout-btn" onclick="handleLogout()">Sign out</button>
+            </div>
+
+            <div id="statsGrid" class="stats-grid"></div>
+
+            <!-- Downloads & Stats Section -->
+            <div class="section">
+                <h2>Download Statistics</h2>
+                <div class="tab-buttons">
+                    <button class="tab-btn active" onclick="switchTab('downloadsByType')">By Type</button>
+                    <button class="tab-btn" onclick="switchTab('qualityPreferences')">Quality Preferences</button>
+                    <button class="tab-btn" onclick="switchTab('serverHealth')">Server Health</button>
+                </div>
+
+                <div id="downloadsByType" class="tab-content active">
+                    <div class="chart-container" id="downloadsByTypeChart"></div>
+                </div>
+
+                <div id="qualityPreferences" class="tab-content">
+                    <div class="chart-container" id="qualityPreferencesChart"></div>
+                </div>
+
+                <div id="serverHealth" class="tab-content">
+                    <div class="chart-container" id="serverHealthChart"></div>
+                </div>
+            </div>
+
+            <!-- Top Errors Section -->
+            <div class="section">
+                <h2>Top Errors (Last 24h)</h2>
+                <div id="topErrorsList" class="error-list"></div>
+            </div>
+
+            <!-- Recent Activity Section -->
+            <div class="section">
+                <h2>Recent Downloads</h2>
+                <div id="recentDownloads" class="error-list"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = '/api';
+        let authToken = localStorage.getItem('adminToken');
+
+        // Check if already logged in
+        if (authToken) {
+            showDashboard();
+            loadDashboardData();
+        } else {
+            showLogin();
+        }
+
+        function showLogin() {
+            document.getElementById('loginSection').style.display = 'block';
+            document.getElementById('dashboard').classList.remove('show');
+        }
+
+        function showDashboard() {
+            document.getElementById('loginSection').style.display = 'none';
+            document.getElementById('dashboard').classList.add('show');
+        }
+
+        async function handleLogin(event) {
+            event.preventDefault();
+            const password = document.getElementById('password').value;
+            const loginBtn = document.getElementById('loginBtn');
+            const errorMessage = document.getElementById('errorMessage');
+
+            if (!password) {
+                showError('Please enter a password');
+                return;
+            }
+
+            loginBtn.disabled = true;
+            loginBtn.textContent = 'Signing in...';
+
+            try {
+                const response = await fetch(`${API_BASE}/admin/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ password })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    showError(data.error || 'Login failed');
+                    return;
+                }
+
+                authToken = data.token;
+                localStorage.setItem('adminToken', authToken);
+                errorMessage.classList.remove('show');
+                document.getElementById('password').value = '';
+                
+                showDashboard();
+                loadDashboardData();
+            } catch (error) {
+                showError('Connection error: ' + error.message);
+            } finally {
+                loginBtn.disabled = false;
+                loginBtn.textContent = 'Sign in';
+            }
+        }
+
+        function handleLogout() {
+            localStorage.removeItem('adminToken');
+            authToken = null;
+            document.getElementById('password').value = '';
+            showLogin();
+        }
+
+        function showError(message) {
+            const errorMessage = document.getElementById('errorMessage');
+            errorMessage.textContent = message;
+            errorMessage.classList.add('show');
+            setTimeout(() => {
+                errorMessage.classList.remove('show');
+            }, 5000);
+        }
+
+        async function loadDashboardData() {
+            try {
+                const response = await fetch(`${API_BASE}/admin/stats`, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+
+                if (response.status === 401) {
+                    localStorage.removeItem('adminToken');
+                    showLogin();
+                    return;
+                }
+
+                const data = await response.json();
+
+                if (!data.success) {
+                    showError(data.error);
+                    return;
+                }
+
+                renderStats(data.stats);
+                loadRecentDownloads();
+            } catch (error) {
+                showError('Failed to load dashboard: ' + error.message);
+            }
+        }
+
+        function renderStats(stats) {
+            const statsGrid = document.getElementById('statsGrid');
+            const statCards = [
+                { label: 'Total Downloads', value: stats.totalDownloads.toLocaleString(), change: '+12%' },
+                { label: 'Data Transferred', value: stats.totalDataTransferred, change: '+8%' },
+                { label: 'Success Rate', value: stats.successRate, change: '+2.3%' },
+                { label: 'Today Downloads', value: stats.todayDownloads, change: 'Today' }
+            ];
+
+            statsGrid.innerHTML = statCards.map(card => `
+                <div class="stat-card">
+                    <div class="stat-label">${card.label}</div>
+                    <div class="stat-value">${card.value}</div>
+                    <div class="stat-change ${card.change.includes('-') ? 'negative' : 'positive'}">${card.change}</div>
+                </div>
+            `).join('');
+
+            // Downloads by type
+            const typeChart = document.getElementById('downloadsByTypeChart');
+            typeChart.innerHTML = Object.entries(stats.downloadsByType).map(([type, count]) => {
+                const total = Object.values(stats.downloadsByType).reduce((a, b) => a + b, 0);
+                const percentage = ((count / total) * 100).toFixed(1);
+                return `
+                    <div class="chart-item">
+                        <div class="chart-label">
+                            <span>${type.charAt(0).toUpperCase() + type.slice(1)}</span>
+                            <span>${percentage}%</span>
+                        </div>
+                        <div class="chart-bar">
+                            <div class="chart-fill" style="width: ${percentage}%"></div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            // Quality preferences (mock data for now)
+            const qualityChart = document.getElementById('qualityPreferencesChart');
+            const qualities = [
+                { name: 'Best (4K/1080p)', percent: 42 },
+                { name: 'High (720p)', percent: 28 },
+                { name: 'Medium (480p)', percent: 18 },
+                { name: 'Audio & Others', percent: 12 }
+            ];
+            qualityChart.innerHTML = qualities.map(q => `
+                <div class="chart-item">
+                    <div class="chart-label">
+                        <span>${q.name}</span>
+                        <span>${q.percent}%</span>
+                    </div>
+                    <div class="chart-bar">
+                        <div class="chart-fill" style="width: ${q.percent}%"></div>
+                    </div>
+                </div>
+            `).join('');
+
+            // Server health (mock data)
+            const healthChart = document.getElementById('serverHealthChart');
+            const health = [
+                { name: 'CPU Usage', percent: 34 },
+                { name: 'Memory Usage', percent: 58 },
+                { name: 'Disk Usage', percent: 72 },
+                { name: 'Network Usage', percent: 45 }
+            ];
+            healthChart.innerHTML = health.map(h => `
+                <div class="chart-item">
+                    <div class="chart-label">
+                        <span>${h.name}</span>
+                        <span>${h.percent}%</span>
+                    </div>
+                    <div class="chart-bar">
+                        <div class="chart-fill" style="width: ${h.percent}%"></div>
+                    </div>
+                </div>
+            `).join('');
+
+            // Top errors
+            const errorsList = document.getElementById('topErrorsList');
+            if (stats.topErrors && stats.topErrors.length > 0) {
+                errorsList.innerHTML = stats.topErrors.map(error => `
+                    <div class="error-item">
+                        <div class="error-item-type">${error.type}</div>
+                        <div class="error-item-message">${error.count} occurrences</div>
+                        <div class="error-item-time">Last 24 hours</div>
+                    </div>
+                `).join('');
+            } else {
+                errorsList.innerHTML = '<div style="text-align: center; color: #8892b0; padding: 20px;">No errors in the last 24 hours</div>';
+            }
+        }
+
+        async function loadRecentDownloads() {
+            try {
+                const response = await fetch(`${API_BASE}/admin/downloads?limit=10`, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+
+                const data = await response.json();
+
+                if (!data.success) {
+                    return;
+                }
+
+                const downloadsList = document.getElementById('recentDownloads');
+                if (data.downloads && data.downloads.length > 0) {
+                    downloadsList.innerHTML = data.downloads.map(download => `
+                        <div class="error-item">
+                            <div class="error-item-type">${download.type.toUpperCase()}</div>
+                            <div class="error-item-message">${download.title}</div>
+                            <div class="error-item-time">
+                                ${download.quality} • ${download.size} MB • ${new Date(download.timestamp).toLocaleDateString()}
+                                ${download.subtitles ? '• Subtitles' : ''}
+                                ${download.success ? '✓' : '✗'}
+                            </div>
+                        </div>
+                    `).join('');
+                } else {
+                    downloadsList.innerHTML = '<div style="text-align: center; color: #8892b0; padding: 20px;">No downloads yet</div>';
+                }
+            } catch (error) {
+                console.error('Failed to load downloads:', error);
+            }
+        }
+
+        function switchTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+
+            // Remove active from all buttons
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+
+            // Show selected tab
+            document.getElementById(tabName).classList.add('active');
+
+            // Highlight selected button
+            event.target.classList.add('active');
+        }
+
+        // Refresh stats every 30 seconds
+        setInterval(() => {
+            if (authToken && document.getElementById('dashboard').classList.contains('show')) {
+                loadDashboardData();
+            }
+        }, 30000);
+    </script>
+</body>
+</html>

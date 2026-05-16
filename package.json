@@ -5,6 +5,10 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:api": "node dev-api-server.mjs",
+    "dev:pipeline": "npm run dev --prefix pipeline-server",
+    "doctor": "npm run doctor --prefix pipeline-server",
+    "dev:all": "concurrently -n ui,api,pipe -c blue,magenta,green \"npm run dev\" \"npm run dev:api\" \"npm run dev:pipeline\"",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview"
@@ -28,6 +32,7 @@
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.1",
     "autoprefixer": "^10.5.0",
+    "concurrently": "^9.1.2",
     "eslint": "^10.3.0",
     "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-react-refresh": "^0.5.2",

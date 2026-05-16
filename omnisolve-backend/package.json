@@ -1,7 +1,7 @@
 {
   "name": "omnisolve-backend",
   "version": "1.0.0",
-  "description": "OmniSolve Backend",
+  "description": "Content Buddy backend API",
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",
