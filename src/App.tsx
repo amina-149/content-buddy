@@ -45,8 +45,8 @@ const LoginPage: React.FC = () => {
 
       setUser(mockUser)
       setToken('mock-jwt-token-' + Date.now())
-    } catch (err: any) {
-      setError(err.message || 'Authentication failed')
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Authentication failed')
     } finally {
       setIsLoading(false)
     }

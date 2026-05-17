@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { useVideoStore } from '@/stores/videoStore'
-import { LoadingSpinner } from '../Common/LoadingSpinner'
 import { Video as VideoIcon, Download, Edit3, Check } from 'lucide-react'
+import type { Caption } from '@/types'
 
 export const CaptionReview: React.FC = () => {
   const videos = useVideoStore((state) => state.videos)
@@ -12,8 +12,8 @@ export const CaptionReview: React.FC = () => {
 
   const videosWithCaptions = videos.filter((v) => v.captions && v.captions.length > 0)
 
-  const handleDownloadCaption = (caption: any) => {
-    const blob = new Blob([caption.srtContent], { type: 'text/plain' })
+  const handleDownloadCaption = (caption: Caption) => {
+    const blob = new Blob([caption.srtContent ?? ''], { type: 'text/plain' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url

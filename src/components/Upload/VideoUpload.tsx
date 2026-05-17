@@ -145,7 +145,7 @@ export const VideoUpload: React.FC = () => {
           Content Buddy - <span className="text-primary">Autonomous pipeline</span>
         </h1>
         <p className="text-gray-500 max-w-3xl mx-auto text-sm md:text-base">
-          YouTube / Shorts -> download locally -> captions from yt-dlp auto-subs or local faster-whisper -> burned MP4.
+          YouTube / Shorts → download locally → captions from yt-dlp auto-subs or local faster-whisper → burned MP4.
           No paid STT API required.
         </p>
       </div>
