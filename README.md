@@ -1,67 +1,62 @@
 # Content Buddy
 
-YouTube / Shorts → **download on your PC** → **captions** (YouTube auto-subs or local **faster-whisper**) → **burn with FFmpeg** → optional **publish** guidance (no paid STT keys by default).
+YouTube/Shorts link -> local download -> local captions -> FFmpeg burn-in -> optional scheduled autopost.
 
-| Approach | This repo uses | Paid API? |
-| --- | --- | --- |
-| Fetch video | **yt-dlp** (CLI) | No |
-| Captions when YT has auto-subs | **yt-dlp** + **FFmpeg** (VTT→SRT) | No |
-| Captions when no subs | **faster-whisper** locally (`pip install faster-whisper`) | No |
-| Burn-in | **FFmpeg** `subtitles=` filter | No |
-| Upload YouTube | Default: **manual** or your own **Playwright/cookie** scripts. Optional: YouTube Data API if you set `ENABLE_YOUTUBE_DATA_API_UPLOAD=true` and pass an OAuth access token. | Only if you opt in |
-| Upload Instagram / TikTok | Not in-process; use **instagrapi** / **tiktok-uploader** / **Playwright** (documented patterns). | No |
+Default path is API-cost-free:
+- download with `yt-dlp`
+- captions from YouTube auto-subs or local `faster-whisper`
+- publish using local browser/session automation scripts (no official platform Data APIs required)
 
-**Not in this repo (you asked about roadmap):** Next.js migration, Upstash queues, AWS Lambda, WebSocket fan-out to Vercel — the current UI is **Vite + React**; the autonomous worker is **`pipeline-server/`** (Express, no Postgres).
+## Prerequisites
 
-## Prerequisites (your machine)
+- Node 18+
+- Python 3 (`py` works on Windows)
+- `yt-dlp`
+- `ffmpeg`
+- Optional: `faster-whisper` for offline STT fallback
 
-- **Node 18+**
-- **yt-dlp** on PATH (`pip install -U yt-dlp` or release binary)
-- **FFmpeg** on PATH
-- **Python 3** with `yt_dlp` for the legacy “link preview” tab (`pip install yt-dlp` → `python -m yt_dlp`)
-- Optional: `pip install faster-whisper` for offline transcription when YouTube has no English auto-captions
-
-## Run everything (recommended)
+## Quick start
 
 ```bash
 npm install
 npm install --prefix pipeline-server
 npm run doctor --prefix pipeline-server
-
-# One terminal — UI + extract API + pipeline API
 npm run dev:all
 ```
 
-Then open **http://localhost:3000** → **Upload** → **YouTube autonomous**: paste a Shorts or watch URL, run pipeline, then save original / captioned MP4 and `.srt`.
+Open `http://localhost:3000`.
 
-## Run services separately
+## Dev commands
 
 ```bash
-# Terminal 1 — Vite (proxies /pipeline → 3002, /api → 3001)
+# UI
 npm run dev
 
-# Terminal 2 — yt-dlp JSON for “Link preview” tab
-npm run dev:api
-
-# Terminal 3 — download + caption + burn (no database)
+# Single backend for extract + pipeline + scheduling
 npm run dev:pipeline
+
+# Convenience (both)
+npm run dev:all
 ```
 
-## Project structure (honest)
+## Current product scope
 
-```
-├── src/                    # React app (Vite)
-├── pipeline-server/      # Autonomous pipeline API (Express, jobs in memory + disk)
-├── dev-api-server.mjs     # GET /api/extract — Python yt_dlp JSON for legacy tab
-├── omnisolve-backend/     # Optional Prisma/Redis stack for future full OAuth + DB flows
-├── api/                   # Vercel Python handler (deploy path)
-└── docker-compose.yml     # Postgres/Redis/backend when you want the full stack
-```
+- Video Downloader tab:
+  - Link preview (`/pipeline/extract`)
+  - Autonomous pipeline run (`/pipeline/start`)
+  - Download original/captioned outputs
+- Review Captions tab:
+  - reads generated `.srt` from completed jobs
+- Distribution tab:
+  - create scheduled autopost tasks
+  - run-now / cancel schedule
+- Job Monitor tab:
+  - live job states from pipeline backend
+- Analytics tab:
+  - real counts from pipeline jobs (no fake demo metrics)
 
-## Legal note
+## Notes
 
-Only process content you have the rights to use. Downloader + republish workflows can violate platform terms or copyright if misused.
-
-## License
-
-MIT
+- Scheduler is local and in-memory (while pipeline server process is running).
+- Autopost depends on local cookies/sessions and uploader scripts under `pipeline-server/uploaders/`.
+- Use only content you have rights to process and repost.

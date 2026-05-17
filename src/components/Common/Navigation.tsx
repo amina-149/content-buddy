@@ -20,7 +20,7 @@ export const Navigation: React.FC = () => {
   ] as const
 
   return (
-    <nav className={`relative bg-secondary text-white transition-all duration-300 flex flex-col ${sidebarOpen ? 'w-64' : 'w-20'}`}>
+    <nav className={`relative shrink-0 bg-secondary text-white transition-all duration-300 flex flex-col ${sidebarOpen ? 'w-64' : 'w-16 md:w-20'}`}>
       <div className="p-4 flex items-center justify-between border-b border-white/10">
         {sidebarOpen && (
           <div className="flex items-center gap-2">
@@ -44,18 +44,18 @@ export const Navigation: React.FC = () => {
         </div>
       )}
 
-      <ul className="mt-4 flex-1">
+      <ul className="mt-3 flex-1 overflow-y-auto">
         {menuItems.map(({ id, label, icon: Icon }) => (
           <li key={id}>
             <button
               onClick={() => setScreen(id)}
-              className={`w-full flex items-center gap-4 px-6 py-3 transition text-left ${
+              className={`w-full flex items-center gap-3 px-3 md:px-5 py-3 transition text-left ${
                 currentScreen === id
                   ? 'bg-primary/20 border-l-4 border-accent text-white'
                   : 'hover:bg-white/5 text-gray-300 hover:text-white border-l-4 border-transparent'
               }`}
             >
-              <Icon size={20} />
+              <Icon size={18} />
               {sidebarOpen && <span className="text-sm">{label}</span>}
             </button>
           </li>

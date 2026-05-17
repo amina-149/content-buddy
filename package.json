@@ -5,10 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "dev:api": "node dev-api-server.mjs",
     "dev:pipeline": "npm run dev --prefix pipeline-server",
     "doctor": "npm run doctor --prefix pipeline-server",
-    "dev:all": "concurrently -n ui,api,pipe -c blue,magenta,green \"npm run dev\" \"npm run dev:api\" \"npm run dev:pipeline\"",
+    "dev:all": "concurrently -n ui,pipe -c blue,green \"npm run dev\" \"npm run dev:pipeline\"",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview"

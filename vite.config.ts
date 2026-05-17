@@ -18,10 +18,6 @@ export default defineConfig({
         changeOrigin: true,
         rewrite: (p) => p.replace(/^\/pipeline/, '/api/pipeline'),
       },
-      '/api': {
-        target: 'http://localhost:3001',
-        changeOrigin: true,
-      },
     },
   },
 })

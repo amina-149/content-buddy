@@ -18,7 +18,7 @@ export function proxyHelp(status: number, pathPrefix: string): string {
     if (pathPrefix.includes('pipeline')) {
       return ' Pipeline API is not reachable (port 3002). Run in project root: npm run dev:pipeline — or npm run dev:all'
     }
-    return ' Backend is not reachable. For link preview run: npm run dev:api — for autonomous pipeline run: npm run dev:pipeline'
+    return ' Backend is not reachable. Start pipeline in project root: npm run dev:pipeline — or npm run dev:all'
   }
   return ''
 }

@@ -76,3 +76,85 @@ export async function publishAutonomous(jobId: string, useOriginal = false) {
   })
   return readJsonResponse(res)
 }
+
+export interface PipelineJobSummary {
+  id: string
+  state: PipelineJobState
+  title?: string
+  createdAt?: number
+  error?: string
+  captionSource?: string
+}
+
+export interface PublishSchedule {
+  id: string
+  jobId: string
+  scheduledFor: string
+  status: 'scheduled' | 'running' | 'completed' | 'failed'
+  createdAt: string
+  error: string | null
+  lastRunAt: string | null
+}
+
+export async function listPipelineJobs(): Promise<
+  PipelineJobSummary[]
+> {
+  const res = await fetch(`${base()}/jobs`)
+  const data = await readJsonResponse(res)
+  if (!res.ok) {
+    throw new Error(String(data.error || `Jobs failed (${res.status})`) + proxyHelp(res.status, 'pipeline'))
+  }
+  return (data.jobs as PipelineJobSummary[]) || []
+}
+
+export async function listSchedules(): Promise<PublishSchedule[]> {
+  const res = await fetch(`${base()}/schedules`)
+  const data = await readJsonResponse(res)
+  if (!res.ok) {
+    throw new Error(String(data.error || `Schedules failed (${res.status})`) + proxyHelp(res.status, 'pipeline'))
+  }
+  return (data.schedules as PublishSchedule[]) || []
+}
+
+export async function schedulePublish(
+  jobId: string,
+  scheduledFor: string,
+  platforms: Array<'youtube' | 'instagram' | 'tiktok'>
+) {
+  const res = await fetch(`${base()}/${encodeURIComponent(jobId)}/schedule`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      scheduledFor,
+      publishRequest: {
+        platforms,
+      },
+    }),
+  })
+  const data = await readJsonResponse(res)
+  if (!res.ok) {
+    throw new Error(String(data.error || `Schedule failed (${res.status})`) + proxyHelp(res.status, 'pipeline'))
+  }
+  return data
+}
+
+export async function cancelSchedule(scheduleId: string) {
+  const res = await fetch(`${base()}/schedules/${encodeURIComponent(scheduleId)}`, { method: 'DELETE' })
+  const data = await readJsonResponse(res)
+  if (!res.ok) {
+    throw new Error(String(data.error || `Cancel failed (${res.status})`) + proxyHelp(res.status, 'pipeline'))
+  }
+  return data
+}
+
+export async function runScheduleNow(scheduleId: string) {
+  const res = await fetch(`${base()}/schedules/${encodeURIComponent(scheduleId)}/run-now`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+  })
+  const data = await readJsonResponse(res)
+  if (!res.ok) {
+    throw new Error(String(data.error || `Run-now failed (${res.status})`) + proxyHelp(res.status, 'pipeline'))
+  }
+  return data
+}

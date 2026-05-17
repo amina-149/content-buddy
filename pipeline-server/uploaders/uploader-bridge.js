@@ -4,12 +4,14 @@
  * Called from pipeline-server routes after video processing is complete.
  */
 
-const { spawn } = require('child_process');
-const path = require('path');
-const fs = require('fs');
+import { spawn } from 'child_process'
+import path from 'path'
+import fs from 'fs'
+import { fileURLToPath } from 'url'
 
-const UPLOADERS_DIR = path.join(__dirname);
-const PYTHON_BIN = process.env.PYTHON_BIN || (process.platform === 'win32' ? 'python' : 'python3');
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
+const UPLOADERS_DIR = path.join(__dirname)
+const PYTHON_BIN = process.env.PYTHON_BIN || (process.platform === 'win32' ? 'py' : 'python3')
 
 /**
  * Run a Python uploader script and collect its JSON output.
@@ -50,14 +52,14 @@ function runUploader(scriptName, args, onProgress = () => {}) {
           }
         } catch {
           // Non-JSON output — treat as log
-          onProgress({ status: 'log', message: line });
+          onProgress({ status: 'log', message: line })
         }
       }
-    });
+    })
 
     proc.stderr.on('data', (chunk) => {
-      stderr += chunk.toString();
-    });
+      stderr += chunk.toString()
+    })
 
     proc.on('close', (code) => {
       if (lastLine) {
@@ -65,20 +67,20 @@ function runUploader(scriptName, args, onProgress = () => {}) {
           const result = JSON.parse(lastLine);
           resolve(result);
         } catch {
-          resolve({ error: `Non-JSON final output: ${lastLine}`, stderr });
+          resolve({ error: `Non-JSON final output: ${lastLine}`, stderr })
         }
       } else {
         resolve({
           error: stderr || `Process exited with code ${code} and no output`,
           code
-        });
+        })
       }
-    });
+    })
 
     proc.on('error', (err) => {
-      reject(new Error(`Failed to spawn ${PYTHON_BIN}: ${err.message}. Is Python installed?`));
-    });
-  });
+      reject(new Error(`Failed to spawn ${PYTHON_BIN}: ${err.message}. Is Python installed?`))
+    })
+  })
 }
 
 
@@ -95,7 +97,7 @@ async function uploadToYouTube({ videoPath, title, description, cookiePath, isSh
 
   if (isShorts) args.push('--shorts');
 
-  return runUploader('youtube_upload.py', args, onProgress);
+  return runUploader('youtube_upload.py', args, onProgress)
 }
 
 
@@ -114,7 +116,7 @@ async function uploadToInstagram({ videoPath, caption, username, password, sessi
     args.push('--session', sessionPath);
   }
 
-  return runUploader('instagram_upload.py', args, onProgress);
+  return runUploader('instagram_upload.py', args, onProgress)
 }
 
 
@@ -132,7 +134,7 @@ async function uploadToTikTok({ videoPath, title, cookiePath, schedule, onProgre
     args.push('--schedule', schedule);
   }
 
-  return runUploader('tiktok_upload.py', args, onProgress);
+  return runUploader('tiktok_upload.py', args, onProgress)
 }
 
 
@@ -150,17 +152,17 @@ async function uploadToAll({
   credentials,      // { youtube: { cookiePath }, instagram: { username, password }, tiktok: { cookiePath } }
   onProgress = () => {},
 }) {
-  const results = [];
+  const results = []
 
   for (const platform of platforms) {
     const creds = credentials[platform];
 
     if (!creds) {
-      results.push({ platform, error: 'No credentials configured' });
-      continue;
+      results.push({ platform, error: 'No credentials configured' })
+      continue
     }
 
-    onProgress({ platform, status: 'starting' });
+    onProgress({ platform, status: 'starting' })
 
     let result;
     try {
@@ -174,7 +176,7 @@ async function uploadToAll({
             isShorts: !!shortsPath,
             onProgress: (p) => onProgress({ ...p, platform }),
           });
-          break;
+          break
 
         case 'instagram':
           result = await uploadToInstagram({
@@ -185,7 +187,7 @@ async function uploadToAll({
             sessionPath: creds.sessionPath,
             onProgress: (p) => onProgress({ ...p, platform }),
           });
-          break;
+          break
 
         case 'tiktok':
           result = await uploadToTikTok({
@@ -194,26 +196,25 @@ async function uploadToAll({
             cookiePath: creds.cookiePath,
             onProgress: (p) => onProgress({ ...p, platform }),
           });
-          break;
+          break
 
         default:
-          result = { error: `Unknown platform: ${platform}` };
+          result = { error: `Unknown platform: ${platform}` }
       }
     } catch (err) {
-      result = { error: err.message, platform };
+      result = { error: err.message, platform }
     }
 
-    results.push({ platform, ...result });
-    onProgress({ platform, status: result.success ? 'done' : 'failed', result });
+    results.push({ platform, ...result })
+    onProgress({ platform, status: result.success ? 'done' : 'failed', result })
   }
 
-  return results;
+  return results
 }
 
-
-module.exports = {
+export {
   uploadToYouTube,
   uploadToInstagram,
   uploadToTikTok,
   uploadToAll,
-};
+}

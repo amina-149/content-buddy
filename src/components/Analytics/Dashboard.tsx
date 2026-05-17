@@ -3,25 +3,46 @@ import { DashboardStats } from '@/types'
 import { LoadingSpinner } from '../Common/LoadingSpinner'
 import { PerformanceCharts } from './PerformanceCharts'
 import { TrendingUp, Eye, BarChart3, Zap } from 'lucide-react'
-import { useVideoStore } from '@/stores/videoStore'
+import { listPipelineJobs } from '@/services/pipelineService'
 
 export const Dashboard: React.FC = () => {
-  const videos = useVideoStore((state) => state.videos)
   const [isLoading, setIsLoading] = useState(true)
+  const [stats, setStats] = useState<DashboardStats>({
+    totalVideos: 0,
+    completedVideos: 0,
+    totalViews: 0,
+    avgEngagement: 0,
+  })
 
   useEffect(() => {
-    // Simulate data loading
-    const timer = setTimeout(() => setIsLoading(false), 500)
-    return () => clearTimeout(timer)
+    let active = true
+    ;(async () => {
+      try {
+        const jobs = await listPipelineJobs()
+        if (!active) return
+        const completed = jobs.filter((j) => j.state === 'completed').length
+        setStats({
+          totalVideos: jobs.length,
+          completedVideos: completed,
+          totalViews: 0,
+          avgEngagement: 0,
+        })
+      } catch {
+        if (!active) return
+        setStats({
+          totalVideos: 0,
+          completedVideos: 0,
+          totalViews: 0,
+          avgEngagement: 0,
+        })
+      } finally {
+        if (active) setIsLoading(false)
+      }
+    })()
+    return () => {
+      active = false
+    }
   }, [])
-
-  // Derive stats from local video store
-  const stats: DashboardStats = {
-    totalVideos: videos.length || 12,
-    completedVideos: videos.filter((v) => v.status === 'COMPLETED').length || 9,
-    totalViews: 15420,
-    avgEngagement: 0.085,
-  }
 
   if (isLoading) {
     return <LoadingSpinner message="Loading analytics..." />
